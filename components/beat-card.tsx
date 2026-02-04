@@ -3,9 +3,6 @@
 import Link from "next/link"
 import { Play, Pause, Music } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { Beat } from "@/store/cart"
 
@@ -16,6 +13,7 @@ interface BeatCardProps {
 export function BeatCard({ beat }: BeatCardProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -53,65 +51,77 @@ export function BeatCard({ beat }: BeatCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden group">
-      <div className="relative aspect-square bg-muted">
-        {beat.cover_url ? (
-          <img
-            src={beat.cover_url}
-            alt={beat.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Music className="h-12 w-12 text-muted-foreground" />
-          </div>
-        )}
-        
-        {!hasError && (
-          <button
-            onClick={togglePlay}
-            className={cn(
-              "absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity",
-              isPlaying && "opacity-100"
-            )}
-          >
-            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
-              {isPlaying ? (
-                <Pause className="h-8 w-8 text-primary-foreground" />
-              ) : (
-                <Play className="h-8 w-8 text-primary-foreground ml-1" />
-              )}
+    <Link href={`/beats/${beat.id}`}>
+      <div 
+        className="group relative overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Cover Image */}
+        <div className="relative aspect-square overflow-hidden">
+          {beat.cover_url ? (
+            <img
+              src={beat.cover_url}
+              alt={beat.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
+              <Music className="h-16 w-16 text-zinc-600" />
             </div>
-          </button>
-        )}
-      </div>
+          )}
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
+          {/* Play Button */}
+          {!hasError && (
+            <div className={cn(
+              "absolute inset-0 flex items-center justify-center transition-all duration-300",
+              isHovered || isPlaying ? "opacity-100" : "opacity-0"
+            )}>
+              <div className={cn(
+                "h-20 w-20 rounded-full flex items-center justify-center transition-transform duration-300",
+                isPlaying ? "bg-purple-500 scale-100" : "bg-purple-600 hover:bg-purple-500 scale-90 hover:scale-100"
+              )}>
+                {isPlaying ? (
+                  <Pause className="h-10 w-10 text-white" />
+                ) : (
+                  <Play className="h-10 w-10 text-white ml-1" />
+                )}
+              </div>
+            </div>
+          )}
 
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <Link href={`/beats/${beat.id}`}>
-              <h3 className="font-semibold hover:text-primary transition-colors">
-                {beat.title}
-              </h3>
-            </Link>
-            <div className="flex gap-2 mt-1 text-sm text-muted-foreground">
-              <span>{beat.bpm} BPM</span>
-              <span>•</span>
-              <span>{beat.key}</span>
-            </div>
+          {/* Price Tag */}
+          <div className="absolute top-3 right-3 px-3 py-1.5 bg-purple-600 rounded-full text-white font-bold text-sm shadow-lg">
+            ${beat.price}
           </div>
-          <Badge variant="secondary">{beat.genre}</Badge>
+
+          {/* Genre Badge */}
+          <div className="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs font-medium">
+            {beat.genre}
+          </div>
         </div>
-      </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        <span className="font-bold text-lg">${beat.price}</span>
-        <Link href={`/beats/${beat.id}`}>
-          <Button variant="outline" size="sm">
-            View Details
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        {/* Info */}
+        <div className="p-4">
+          <h3 className="font-bold text-lg text-white group-hover:text-purple-400 transition-colors truncate">
+            {beat.title}
+          </h3>
+          <div className="flex items-center gap-3 mt-1 text-zinc-400 text-sm">
+            <span>{beat.bpm} BPM</span>
+            <span className="w-1 h-1 bg-zinc-600 rounded-full" />
+            <span>{beat.key}</span>
+          </div>
+          
+          {/* Hover Effect Line */}
+          <div className={cn(
+            "h-0.5 mt-3 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300",
+            isHovered ? "opacity-100" : "opacity-0"
+          )} />
+        </div>
+      </div>
+    </Link>
   )
 }
